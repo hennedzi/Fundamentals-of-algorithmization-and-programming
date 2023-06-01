@@ -1,0 +1,104 @@
+//В папке с проектом хранится текстовый файл. В файле записаны фамилии студентов. 
+//Записать оценки студентов по итогам сессии и вывести результат в виде матрице n x 5
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+#define MAX_NAME_LEN 20
+#define NUM_EXAMS 5
+
+
+typedef struct {
+   char name[MAX_NAME_LEN];
+   int marks[NUM_EXAMS];
+} Student;
+
+
+void calculate_averages(Student *students, int num_students, float *averages) {
+   int i, j;
+   for (i = 0; i < NUM_EXAMS; i++) {
+       float sum = 0;
+       for (j = 0; j < num_students; j++) {
+           sum += students[j].marks[i];
+       }
+       averages[i] = sum / num_students;
+   }
+}
+
+
+int main() {
+   // Open file for reading
+   FILE *file = fopen("students.txt", "r");
+   if (!file) {
+       printf("Error: could not open file\n");
+       exit(1);
+   }
+
+
+   // Count number of students
+   int num_students = 0;
+   char temp[MAX_NAME_LEN];
+   while (fgets(temp, MAX_NAME_LEN, file)) {
+       num_students++;
+   }
+   rewind(file);
+
+
+   // Allocate memory for students
+   Student *students = (Student *) malloc(num_students * sizeof(Student));
+   if (!students) {
+       printf("Error: could not allocate memory\n");
+       exit(1);
+   }
+
+
+   // Read in student names and marks
+   int i, j;
+   for (i = 0; i < num_students; i++) {
+       fgets(students[i].name, MAX_NAME_LEN, file);
+       students[i].name[strcspn(students[i].name, "\n")] = 0; // Remove newline character
+       for (j = 0; j < NUM_EXAMS; j++) {
+           printf("Enter mark for %s on exam %d: ", students[i].name, j+1);
+           scanf("%d", &students[i].marks[j]);
+       }
+   }
+
+
+   // Calculate averages for each subject
+   float averages[NUM_EXAMS];
+   calculate_averages(students, num_students, averages);
+
+
+   // Print results to console
+   printf("\nResults:\n");
+   printf("   ");
+   for (i = 0; i < NUM_EXAMS; i++) {
+       printf("%5d", i+1);
+   }
+   printf("\n");
+
+
+   for (i = 0; i < num_students; i++) {
+       printf("%-3s", students[i].name);
+       for (j = 0; j < NUM_EXAMS; j++) {
+           printf("%5d", students[i].marks[j]);
+       }
+       printf("\n");
+   }
+
+
+   printf("\n");
+   for (i = 0; i < NUM_EXAMS; i++) {
+       printf("Subject %d average: %.2f\n", i+1, averages[i]);
+   }
+
+
+   // Free memory and close file
+   free(students);
+   fclose(file);
+
+
+   return 0;
+}
